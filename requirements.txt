@@ -1,0 +1,7 @@
+Flask
+psycopg2-binary
+python-dotenv
+joblib
+lightgbm
+scikit-learn
+tqdm

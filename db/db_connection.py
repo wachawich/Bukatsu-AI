@@ -14,6 +14,15 @@ def get_db_connection():
     )
     return conn
 
+def get_db_connection_AI():
+    conn = psycopg2.connect(
+        host=os.getenv("DB_HOST_AI"),
+        database=os.getenv("DB_NAME_AI"),
+        user=os.getenv("DB_USER_AI"),
+        password=os.getenv("DB_PASSWORD_AI")
+    )
+    return conn
+
 def pgQuery(query):
     conn = get_db_connection()
     cur = conn.cursor()

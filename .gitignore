@@ -19,3 +19,9 @@ __pycache__/
 # ไฟล์ที่สร้างโดยระบบปฏิบัติการ
 .DS_Store
 Thumbs.db
+
+
+*.ipynb
+sima.py
+
+*.zip
