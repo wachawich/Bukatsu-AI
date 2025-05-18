@@ -1,0 +1,21 @@
+# ไฟล์หรือโฟลเดอร์ที่เกี่ยวกับ virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# ไฟล์ environment variables
+.env
+.env.*
+
+# ไฟล์ Python ที่ไม่จำเป็น
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ไฟล์ log
+*.log
+
+# ไฟล์ที่สร้างโดยระบบปฏิบัติการ
+.DS_Store
+Thumbs.db
