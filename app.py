@@ -19,7 +19,7 @@ from flask_cors import CORS
 import cv2
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app, supports_credentials=True)
 
 load_dotenv() 
 
