@@ -9,13 +9,16 @@ import joblib
 from logic.user import get_user
 from logic.process import processFunction
 from logic.activity import get_activity, get_activity_ai
-from logic.jsonAI import callJsonAPI
+from logic.jsonAI import callJsonAPI, updateJsonField
 from model.callModel import predict_sift_flann
 import numpy as np
+from flask_cors import CORS
+
 
 import cv2
 
 app = Flask(__name__)
+CORS(app) 
 
 load_dotenv() 
 
@@ -71,7 +74,9 @@ def locationPredict():
 
     return predict_sift_flann(loaded_dataset_features, query_img, sift, flann)
 
-
+@app.route('/update_json.ai', methods=['POST'])
+def updateJsonAI():
+    return updateJsonField()
 
 @app.route("/callJson", methods=["POST"])
 def callJsonAI():

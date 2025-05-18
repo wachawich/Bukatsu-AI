@@ -201,14 +201,27 @@ def get_activity_ai(model):
 
         prediction_data = predict_lgbm(jsonInfo, model)
         
-        print("prediction_data", prediction_data)
+        # print("prediction_data", prediction_data)
 
         
-        rank_map = {v: k for k, v in prediction_data.items()}
-        enriched_data_sorted = sorted(enriched_data, key=lambda activity: get_rank(activity, rank_map))
+        # rank_map = {v: k for k, v in prediction_data.items()}
+        # enriched_data_sorted = sorted(enriched_data, key=lambda activity: get_rank(activity, rank_map))
 
+
+        # return jsonify({ "success": True, "data": enriched_data_sorted }), 200
+        
+        # เพิ่ม rank score เข้าไปใน enriched_data แต่ไม่ sort
+        rank_map = {v: k for k, v in prediction_data.items()}
+
+        for activity in enriched_data:
+            activity_id = activity.get('activity_id')
+            activity['rank_score'] = get_rank(activity, rank_map)  # หรือ prediction_data.get(activity_id)
+
+        # sort enriched_data ตาม rank_score
+        enriched_data_sorted = sorted(enriched_data, key=lambda activity: activity.get('rank_score', float('inf')))
 
         return jsonify({ "success": True, "data": enriched_data_sorted }), 200
+
 
     except Exception as e:
         print("Error fetching data:", e)

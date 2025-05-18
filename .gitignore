@@ -25,3 +25,5 @@ Thumbs.db
 sima.py
 
 *.zip
+
+/model/dataset_very_small_final
