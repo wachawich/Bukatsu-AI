@@ -4,6 +4,7 @@ from flask import Flask
 from dotenv import load_dotenv
 import os
 import joblib
+from multiprocessing import cpu_count
 
 # from db.db_connection import get_db_connection
 from logic.user import get_user
@@ -84,4 +85,31 @@ def callJsonAI():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # ใช้ Gunicorn สำหรับ production
+    if os.environ.get('FLASK_ENV') == 'production':
+        workers = cpu_count() * 2 + 1
+        from gunicorn.app.base import BaseApplication
+
+        class FlaskApplication(BaseApplication):
+            def __init__(self, app, options=None):
+                self.options = options or {}
+                self.application = app
+                super().__init__()
+
+            def load_config(self):
+                for key, value in self.options.items():
+                    self.cfg.set(key, value)
+
+            def load(self):
+                return self.application
+
+        options = {
+            'bind': '%s:%s' % ('0.0.0.0', '5000'),
+            'workers': workers,
+            'worker_class': 'gevent',
+            'timeout': 120
+        }
+        FlaskApplication(app, options).run()
+    else:
+        # Development mode
+        app.run(debug=True)
