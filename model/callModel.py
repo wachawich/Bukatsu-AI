@@ -18,7 +18,8 @@ from tqdm.auto import tqdm
 def process_single_match(entry, query_des, index_params, search_params):
     # สร้าง FLANN matcher ใหม่สำหรับแต่ละ process
     flann = cv2.FlannBasedMatcher(index_params, search_params)
-    des = np.load(f"./model/{entry['des_path']}")
+    des_path = os.path.join('model', entry['des_path'].replace('\\', '/'))
+    des = np.load(des_path)
     matches = flann.knnMatch(query_des, des, k=2)
     
     good = []
