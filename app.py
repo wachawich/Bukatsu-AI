@@ -13,11 +13,14 @@ from logic.activity import get_activity, get_activity_ai
 from logic.jsonAI import callJsonAPI
 from model.callModel import predict_sift_flann
 import numpy as np
+from flask_cors import CORS
+
+
 
 import cv2
 
 app = Flask(__name__)
-
+CORS(app, supports_credentials=True)
 load_dotenv() 
 
 model = joblib.load('./model/lgb_model.pkl')
