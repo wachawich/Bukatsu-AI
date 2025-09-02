@@ -7,13 +7,6 @@ from collections import Counter
 
 def processFunctionLocal(user_sys_id):
 
-
-    # print(data['user_sys_id'])
-    # print(data['all'])
-
-    # if not any(data.get(field) for field in fields):
-    #     return jsonify({"success": False, "message": "No value input!"}), 400
-
     user_id = user_sys_id
     
     activityTypeInList = []
@@ -36,12 +29,10 @@ def processFunctionLocal(user_sys_id):
     
         
         processJson = process_user_by_id(user_id, activityTypeInList, favActivityTypeList, activityTypeList)
-        #print("processJson", processJson)
         
         
         return processJson
-    # elif data['all'] > 0 :
-    #      return jsonify({"success": True, "data": "sima"}), 400
+
     else :
         return "error"
     

@@ -35,7 +35,6 @@ def get_activity():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # ดึง activity หลัก
         cur.execute(query)
         columns = [desc[0] for desc in cur.description]
         rows = [dict(zip(columns, row)) for row in cur.fetchall()]
@@ -47,7 +46,6 @@ def get_activity():
 
         activity_id = rows[0]['activity_id']
 
-        # ดึง activity_type_normalize
         query_type = f"""
         SELECT * FROM public.activity_type_normalize atn
         LEFT JOIN activity_type at ON at.activity_type_id = atn.activity_type_id
@@ -57,7 +55,6 @@ def get_activity():
         type_columns = [desc[0] for desc in cur.description]
         type_data = [dict(zip(type_columns, row)) for row in cur.fetchall()]
 
-        # ดึง activity_subject_normalize
         query_subject = f"""
         SELECT * FROM public.activity_subject_normalize asn
         LEFT JOIN subject s ON s.subject_id = asn.subject_id
@@ -70,7 +67,6 @@ def get_activity():
         cur.close()
         conn.close()
 
-        # จัดกลุ่มข้อมูล
         ac_type_grouped = {}
         for row in type_data:
             aid = row['activity_id']
@@ -98,10 +94,6 @@ def get_activity():
 
 def get_activity_ai(model):
     data = request.get_json()
-
-    # เพิ่มรับ user_info และ processJson
-    # user_info = data.get("user_info")
-    # processJson = data.get("processJson")
     
     user_sys_id = data.get("user_sys_id")
     
@@ -139,7 +131,6 @@ def get_activity_ai(model):
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # ดึง activity หลัก
         cur.execute(query)
         columns = [desc[0] for desc in cur.description]
         rows = [dict(zip(columns, row)) for row in cur.fetchall()]
@@ -149,11 +140,9 @@ def get_activity_ai(model):
             conn.close()
             return jsonify({ "success": True, "data": [] }), 200
 
-        # ---------- ดึงข้อมูลเสริม ----------
         activity_ids = [row["activity_id"] for row in rows]
         placeholders = ",".join(map(str, activity_ids))
 
-        # ดึง activity_type_normalize
         query_type = f"""
         SELECT * FROM public.activity_type_normalize atn
         LEFT JOIN activity_type at ON at.activity_type_id = atn.activity_type_id
@@ -162,8 +151,7 @@ def get_activity_ai(model):
         cur.execute(query_type)
         type_columns = [desc[0] for desc in cur.description]
         type_data = [dict(zip(type_columns, row)) for row in cur.fetchall()]
-
-        # ดึง activity_subject_normalize
+        
         query_subject = f"""
         SELECT * FROM public.activity_subject_normalize asn
         LEFT JOIN subject s ON s.subject_id = asn.subject_id
@@ -176,7 +164,6 @@ def get_activity_ai(model):
         cur.close()
         conn.close()
 
-        # ---------- จัดกลุ่ม ----------
         ac_type_grouped = {}
         for row in type_data:
             aid = row['activity_id']
@@ -187,7 +174,7 @@ def get_activity_ai(model):
             aid = row['activity_id']
             sub_type_grouped.setdefault(aid, []).append(row)
 
-        # ---------- สร้าง enriched_data ----------
+
         enriched_data = []
         for activity in rows:
             aid = activity['activity_id']
@@ -197,27 +184,18 @@ def get_activity_ai(model):
                 "activity_subject_data": sub_type_grouped.get(aid, [])
             })
 
-        print("sima")
+        print("Predict...")
 
+        # Predict with lgbm
         prediction_data = predict_lgbm(jsonInfo, model)
         
-        # print("prediction_data", prediction_data)
-
         
-        # rank_map = {v: k for k, v in prediction_data.items()}
-        # enriched_data_sorted = sorted(enriched_data, key=lambda activity: get_rank(activity, rank_map))
-
-
-        # return jsonify({ "success": True, "data": enriched_data_sorted }), 200
-        
-        # เพิ่ม rank score เข้าไปใน enriched_data แต่ไม่ sort
         rank_map = {v: k for k, v in prediction_data.items()}
 
         for activity in enriched_data:
             activity_id = activity.get('activity_id')
-            activity['rank_score'] = get_rank(activity, rank_map)  # หรือ prediction_data.get(activity_id)
+            activity['rank_score'] = get_rank(activity, rank_map) 
 
-        # sort enriched_data ตาม rank_score
         enriched_data_sorted = sorted(enriched_data, key=lambda activity: activity.get('rank_score', float('inf')))
 
         return jsonify({ "success": True, "data": enriched_data_sorted }), 200
@@ -229,7 +207,6 @@ def get_activity_ai(model):
 
 
 def alias_prefix(key):
-    # แยก prefix ให้ตรงกับ table alias
     activity_keys = [
         "activity_id", "title", "create_date", "start_date", "end_date",
         "status", "create_by", "flag_valid", "location_id"
@@ -242,10 +219,10 @@ def alias_prefix(key):
 
 
 def get_rank(activity, rank_map):
-    # ดึงประเภทกิจกรรมจาก activity_type_data[0] (ถ้ามีหลายรายการอาจเลือกวิธีอื่น)
+
     if activity.get('activity_type_data'):
-        # ลองดึง activity_type_name_th
+        
         name_th = activity['activity_type_data'][0].get('activity_type_name_th', '').strip()
-        # หาค่า rank จาก map
-        return rank_map.get(name_th, 9999)  # 9999 = ค่า default ถ้าไม่เจอประเภท
+        return rank_map.get(name_th, 9999)
+    
     return 9999

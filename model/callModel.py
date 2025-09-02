@@ -78,7 +78,6 @@ def predict_lgbm(user_info, model):
         le_role.fit(role)
         pbar.update(1)
 
-    # สร้าง test rows แบบขนาน
     def create_row(act):
         return {
             'activity_type_enc': le_act.transform([act])[0],
@@ -90,7 +89,7 @@ def predict_lgbm(user_info, model):
         }
 
     print("กำลังประมวลผลข้อมูลแบบขนาน...")
-    # ใช้ Parallel processing ในการสร้าง rows
+    # ใช้ Parallel processing
     test_rows = Parallel(n_jobs=-1)(
         delayed(create_row)(act) for act in tqdm(activity_type, desc="สร้างข้อมูล", leave=True)
     )
@@ -99,7 +98,6 @@ def predict_lgbm(user_info, model):
     print("กำลังทำนายผล...")
     scores = model.predict(X_test)
 
-    # แสดงผลลัพธ์เรียงลำดับจากมากไปน้อย
     ranked = sorted(zip(le_act.inverse_transform(X_test['activity_type_enc']), scores), key=lambda x: -x[1])
     print("\nผลการทำนาย:")
     for i, (act, score) in enumerate(ranked, 1):
@@ -140,17 +138,14 @@ def predict_sift_flann(loaded_dataset_features, query_img, sift, flann):
     )
 
     print("กำลังรวมผลการโหวตแบบขนาน...")
-    # แบ่งผลลัพธ์เป็น chunks สำหรับการประมวลผลแบบขนาน
     n_chunks = cpu_count()
     chunk_size = len(results) // n_chunks + (1 if len(results) % n_chunks else 0)
     chunks = [results[i:i + chunk_size] for i in range(0, len(results), chunk_size)]
 
-    # ประมวลผล votes แบบขนาน
     votes_chunks = Parallel(n_jobs=-1)(
         delayed(process_votes_chunk)(chunk) for chunk in tqdm(chunks, desc="ประมวลผลโหวต", leave=True)
     )
 
-    # รวมผลลัพธ์จากทุก chunk
     votes = merge_votes(votes_chunks)
 
     if votes:

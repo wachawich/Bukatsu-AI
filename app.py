@@ -55,10 +55,6 @@ def getActivityAI():
     return get_activity_ai(model)
 
 
-# @app.route("/activity_limit.get.ai", methods=["POST"])
-# def getActivityLimitAI():
-#     return get_activity_limit_ai(model)
-
 @app.route("/location.predict.ai", methods=["POST"])
 def locationPredict():
 
@@ -69,7 +65,6 @@ def locationPredict():
     if image_file.filename == '':
         return jsonify({"success": False, "message": "No file selected"}), 400
 
-        # อ่านภาพจากไฟล์
     file_bytes = np.frombuffer(image_file.read(), np.uint8)
     query_img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
 
